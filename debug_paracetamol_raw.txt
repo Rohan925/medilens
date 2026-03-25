@@ -1,0 +1,10 @@
+No results found for PARACETAMOL (trying Acetaminophen)
+--- Indications and Usage ---
+[
+  "USES For Arthritis Pain label \u2022 temporarily relieves minor aches and pains due to: \u2022 minor pain of arthritis \u2022 muscular aches \u2022 backache \u2022 premenstrual and menstrual cramps \u2022 the common cold \u2022 headache \u2022 toothache \u2022 temporarily reduces fever For Muscle Aches & Pain label \u2022 temporarily relieves minor aches and pains due to: \u2022 muscular aches \u2022 backache \u2022 minor pain of arthritis \u2022 toothache \u2022 premenstrual and menstrual cramps \u2022 headache \u2022 the common cold \u2022 temporarily reduces fever"
+]
+
+--- Purpose ---
+[
+  "PURPOSE Pain reliever/fever reducer"
+]

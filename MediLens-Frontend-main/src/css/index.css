@@ -1,0 +1,26 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+  background-color: #1e1e1e;
+  color: white;
+  font-family: Arial, sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  /* ❌ REMOVE padding-top: 60px; */
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

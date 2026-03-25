@@ -1,0 +1,163 @@
+/* =========================
+   PAGE LAYOUT
+========================= */
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 80px;
+  gap: 40px;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+  max-width: 1100px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* =========================
+   SEARCH BAR
+========================= */
+
+.search-section {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.search-section:focus-within {
+  border-color: var(--secondary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 25px rgba(56, 189, 248, 0.2);
+}
+
+.search-section input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: rgb(16, 145, 177);
+  font-size: 1.1rem;
+  padding: 12px 20px;
+  outline: none;
+}
+
+.search-section input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 🔥 ONLY FIX HERE */
+.search-section button {
+  background: var(--secondary);
+  color: #000;
+  font-weight: 600;
+  padding: 12px 28px;
+  /* was 10px → now matches input */
+  border-radius: 999px;
+  font-size: 1rem;
+  transition: transform 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.search-section button:hover {
+  transform: scale(1.05);
+  background: #1576c0;
+}
+
+/* =========================
+   TOOL CARDS (CHAT + OCR)
+========================= */
+
+.tool-card {
+  width: 100%;
+  max-width: 500px;
+  height: 500px;
+  background: var(--bg-card, #1e1e24);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.tool-header {
+  padding: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.tool-body {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.tool-body.tool-camera {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+}
+
+.camera-button {
+  width: 200px;
+  height: 200px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: rgba(0, 0, 0, 0.2);
+  gap: 10px;
+}
+
+.camera-button:hover {
+  border-color: var(--secondary);
+  color: var(--secondary);
+  transform: scale(1.05);
+  background: rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+}
+
+.camera-icon {
+  font-size: 64px;
+}
+
+.camera-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.ocr-hint {
+  text-align: center;
+  padding: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.2);
+}

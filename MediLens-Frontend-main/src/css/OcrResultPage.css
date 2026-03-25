@@ -1,0 +1,204 @@
+/* Page container */
+.ocr-result-page {
+  max-width: 1200px;
+  /* Increased from 420px for desktop */
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Main Content Layout */
+.content-container {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+/* Left Column: Details */
+.details-card {
+  flex: 1;
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  min-width: 300px;
+}
+
+/* Right Column: Chat */
+.chat-column {
+  flex: 1;
+  min-width: 350px;
+  max-width: 450px;
+  /* Keep chat from getting too wide */
+  position: sticky;
+  top: 20px;
+  /* Sticky chat on scroll */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .content-container {
+    flex-direction: column;
+  }
+
+  .chat-column {
+    min-width: 100%;
+    position: static;
+  }
+}
+
+/* Uploaded image */
+.ocr-image {
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 16px;
+  background: #fff;
+}
+
+/* Result cards */
+.result {
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+/* Success */
+.result.success {
+  background: #e9f7ef;
+  border: 1px solid #b7e4c7;
+}
+
+/* Error */
+.result.error {
+  background: #fdecea;
+  border: 1px solid #f5c2c7;
+}
+
+/* Medicine name */
+.medicine-name {
+  margin: 8px 0;
+  font-size: 22px;
+  color: #1d4ed8;
+  letter-spacing: 1px;
+}
+
+/* Cleaned text */
+.cleaned-text {
+  font-style: italic;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+/* Meta info box */
+.medicine-meta {
+  text-align: left;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.medicine-meta p {
+  margin: 6px 0;
+}
+
+/* Confidence */
+.confidence {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #555;
+}
+
+/* OCR raw text */
+pre {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+/* Buttons */
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e40af;
+}
+
+/* Structured Result Styles */
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #a3bffa;
+  margin-top: 15px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Badges for Uses */
+.badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill-badge {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* List for Side Effects */
+.side-effects-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 0;
+  color: #cbd5f5;
+  text-align: left;
+}
+
+.side-effects-list li {
+  margin-bottom: 4px;
+}
+
+/* Warning Box */
+.warning-box {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 3px solid #ef4444;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  text-align: left;
+}
+
+.warning-item {
+  color: #fca5a5;
+  font-size: 13px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.warning-icon {
+  margin-right: 6px;
+}

@@ -1,0 +1,8 @@
+Raw Indications: [
+  "Uses temporarily relieves minor aches and pains due to: headache the common cold backache minor pain of arthritis toothache muscular aches premenstrual and menstrual cramps temporarily reduces fever"
+]
+Raw Purpose: [
+  "Purpose Pain reliever/fever reducer"
+]
+Formatted Indications: ['Menstrual cramps  fever']
+Formatted Purpose: ['Purpose pain reliever/fever reducer']

@@ -1,0 +1,5 @@
+
+--- Testing Paracetamol Uses Extraction ---
+Uses (Indications): ['Headache', 'Common cold', 'Backache', 'Of arthritis', 'Toothache', 'Premenstrual', 'Menstrual cramps', 'Fever']
+Purpose (Fallback): ['Purpose Pain reliever/fever reducer']
+SUCCESS: 'Menstrual cramps' and 'Fever' are separate.

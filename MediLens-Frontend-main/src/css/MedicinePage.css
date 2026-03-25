@@ -1,0 +1,82 @@
+/* =========================
+   PAGE LAYOUT
+========================= */
+
+/* src/css/MedicinePage.css */
+.medicine-page {
+  padding-top: 100px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-bottom: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* =========================
+   MEDICINE SUMMARY
+========================= */
+
+.medicine-content {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: var(--glass-shadow);
+}
+
+.medicine-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(to right, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.medicine-summary p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  color: var(--text-main);
+}
+
+.medicine-summary strong {
+  color: var(--secondary);
+  font-weight: 600;
+}
+
+.medicine-content p {
+  margin-bottom: 12px;
+  line-height: 1.6;
+  color: #eaeaea;
+}
+
+/* =========================
+   CHATBOT CONTAINER
+========================= */
+
+.medicine-chatbot {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* =========================
+   RESPONSIVE (MOBILE)
+========================= */
+
+@media (max-width: 1100px) {
+  .medicine-page {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .medicine-content,
+  .medicine-chatbot {
+    max-width: 100%;
+  }
+}
