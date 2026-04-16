@@ -1,7 +1,6 @@
-# backend/ui.py
-
 from fastapi import APIRouter
 from pydantic import BaseModel
+from typing import List, Optional
 
 from agents.coordinator_agent import coordinator_agent
 
@@ -14,8 +13,8 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     answer: str
-    summary: str | None = None
-    citations: list = []
+    summary: Optional[dict] = None
+    citations: List[dict] = []
 
 
 @router.post("/query", response_model=QueryResponse)
@@ -23,19 +22,31 @@ async def handle_query(request: QueryRequest):
     """
     UI ENTRYPOINT
 
-    - Receives user query from frontend
-    - Passes it to coordinator agent
-    - Returns final response
+    - Receives user query
+    - Sends to coordinator
+    - Returns structured response
     """
 
+    # ---------------- INITIAL STATE ----------------
     initial_state = {
-        "query": request.query
+        "query": request.query,
+        "history": [],
+        "medicine_name": None
     }
 
-    final_state = await coordinator_agent(initial_state)
+    try:
+        final_state = await coordinator_agent(initial_state)
 
-    return QueryResponse(
-        answer=final_state.get("final_answer", ""),
-        summary=final_state.get("summary"),
-        citations=final_state.get("citations", [])
-    )
+        return QueryResponse(
+            answer=final_state.get("final_answer", ""),
+            summary=final_state.get("structured_summary"),
+            citations=final_state.get("citations", [])
+        )
+
+    except Exception as e:
+        # Safe fallback
+        return QueryResponse(
+            answer="Something went wrong while processing your request. Please try again.",
+            summary=None,
+            citations=[]
+        )

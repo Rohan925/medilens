@@ -1,8 +1,9 @@
-
+import logging
 import requests
 import re
 
 BASE_URL = "https://api.fda.gov/drug/label.json"
+logger = logging.getLogger(__name__)
 
 SYNONYMS = {
     "paracetamol": "acetaminophen",
@@ -220,7 +221,7 @@ def fetch_openfda_data(drug_name: str):
             }
             
             print(f"DEBUG: Querying OpenFDA: {q}")
-            response = requests.get(BASE_URL, params=params)
+            response = requests.get(BASE_URL, params=params, timeout=10)
             data = response.json()
             
             if "results" in data:
@@ -304,7 +305,5 @@ def fetch_openfda_data(drug_name: str):
         }
 
     except Exception as e:
-        print(f"DEBUG Error fetching OpenFDA data for {drug_name}: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.warning("OpenFDA fetch failed for %s: %s", drug_name, e)
         return None

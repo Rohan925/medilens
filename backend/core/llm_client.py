@@ -1,77 +1,71 @@
-from google import genai
 import os
+import logging
+
 from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 
 load_dotenv()
+logger = logging.getLogger(__name__)
+
 
 class LLMClient:
-    def __init__(self, model="gemini-2.5-flash"):
-        self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
-        self.model_name = model
+    def __init__(self) -> None:
+        api_key = os.getenv("GEMINI_API_KEY")
+        self._llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            temperature=0,
+            google_api_key=api_key,
+        )
 
-    def generate(self, prompt: str) -> str:
+    async def generate_answer(self, prompt: str) -> str:
         try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt
-            )
-            return response.text.strip()
-        except Exception as e:
-            return f"Error connecting to LLM: {str(e)}"
+            response = await self._llm.ainvoke([HumanMessage(content=prompt)])
+            return response.content
+        except Exception as exc:
+            logger.warning("LLM generate failed, using fallback response: %s", exc)
+            return self._fallback_response(prompt)
 
-    async def summarize(self, text: str, mode: str = "standard") -> str:
-        prompt = f"""
-        Summarize the following medical text. Mode: {mode}
-        
-        Text:
-        {text}
-        
-        Keep it concise and patient-friendly if requested.
-        """
-        return self.generate(prompt)
-
-    async def extract_indications(self, raw_text: str) -> str:
-        """
-        Uses Gemini to extract strictly clinical indications from raw FDA text.
-        """
-        prompt = f"""
-        You are a medical summarization assistant. 
-        
-        Extract ONLY clinical indications from the provided FDA text.
-        
-        RULES:
-        1. Extract only clinical indications.
-        2. Do NOT include headers like "Indications & Usage".
-        3. Do NOT include mechanism of action.
-        4. Remove repeated phrases like "X tablets are indicated".
-        5. Provide MAXIMUM 6 bullet points. No less, no more than exactly what is needed.
-        6. Each bullet must be short and clinically precise.
-        7. No explanations.
-        8. No extra text.
-        9. Return ONLY a bulleted list (e.g., "- Headache\\n- Fever").
-
-        TEXT:
-        {raw_text}
-        """
-        
+    def summarize(self, text: str) -> str:
         try:
-            # We want deterministic, highly constrained output.
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=genai.types.GenerateContentConfig(
-                    temperature=0.1,
-                ),
+            response = self._llm.invoke(
+                [HumanMessage(content=f"Summarize this medical text clearly and briefly:\n\n{text}")]
             )
-            return response.text.strip()
-        except Exception as e:
-            return f"Error connecting to LLM: {str(e)}"
+            return response.content
+        except Exception as exc:
+            logger.warning("LLM summarize failed, using fallback summary: %s", exc)
+            cleaned = " ".join(text.split())
+            if not cleaned:
+                return ""
+            if len(cleaned) <= 300:
+                return cleaned
+            return cleaned[:297] + "..."
 
-    async def generate_answer(self, prompt: str, context: list = None) -> str:
-        """
-        Async wrapper for generate to satisfy agent interface.
-        """
-        return self.generate(prompt)
+    def _fallback_response(self, prompt: str) -> str:
+        prompt_lower = prompt.lower()
 
-# IMPORTANT: export instance
+        if "respond with:" in prompt_lower and "valid / partial / invalid" in prompt_lower:
+            return "PARTIAL"
+
+        if "return only the name" in prompt_lower and "medicine name" in prompt_lower:
+            return "Unknown"
+
+        if "consult a healthcare professional for proper medical advice" in prompt_lower:
+            return (
+                "I couldn't verify the full answer from the language model right now. "
+                "Based on the available medical context, please refer to the listed uses and warnings. "
+                "Consult a healthcare professional for proper medical advice."
+            )
+
+        return (
+            "I couldn't complete the language model request right now. "
+            "Please try again later."
+        )
+
+
 llm_client = LLMClient()
+
+
+async def generate_answer(prompt: str) -> str:
+    return await llm_client.generate_answer(prompt)

@@ -10,7 +10,13 @@ async def get_medicine_data(medicine: str):
 
     final_state = await coordinator_agent(initial_state)
 
-    structured = final_state.get("structured_summary", {})
+    structured = final_state.get("structured_summary") or {
+        "drug_name": medicine.capitalize() if medicine else "Unknown Medicine",
+        "category": "Unknown",
+        "uses": [],
+        "warnings": ["No verified medical data available."],
+        "prescription_status": "Unknown",
+    }
 
     return {
         "name": structured.get("drug_name"),
