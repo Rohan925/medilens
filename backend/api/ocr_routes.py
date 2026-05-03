@@ -21,5 +21,4 @@ async def ocr_endpoint(file: UploadFile = File(...)):
     result = await process_image(temp_path)
 
     os.remove(temp_path)
-
     return result
