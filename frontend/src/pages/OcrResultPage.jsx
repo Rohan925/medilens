@@ -1,7 +1,6 @@
 import { useLocation } from "react-router-dom";
+import AppNavbar from "../components/AppNavbar";
 import ChatBot from "../components/ChatBot";
-import logo from "../assets/logo.png";   // ✅ Already present
-import "../css/Navbar.css";
 import "../css/OcrResultPage.css";
 
 function OcrResultPage() {
@@ -16,12 +15,7 @@ function OcrResultPage() {
 
   return (
     <>
-      <div className="navbar">
-        <div className="navbar-left">
-          <img src={logo} alt="Logo" className="navbar-logo" />
-          <span>MediLens</span>
-        </div>
-      </div>
+      <AppNavbar />
 
       <div className="medicine-page">
         <div className="medicine-content">

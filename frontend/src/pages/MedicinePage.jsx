@@ -1,8 +1,7 @@
 import { useParams } from "react-router-dom";
+import AppNavbar from "../components/AppNavbar";
 import MedicineSummary from "../components/MedicineSummary";
 import ChatBot from "../components/ChatBot";
-import logo from "../assets/logo.png";   // ✅ Added
-import "../css/Navbar.css";
 import "../css/MedicinePage.css";
 
 function MedicinePage() {
@@ -10,12 +9,7 @@ function MedicinePage() {
 
   return (
     <>
-      <div className="navbar">
-        <div className="navbar-left">
-          <img src={logo} alt="Logo" className="navbar-logo" />
-          <span>MediLens</span>
-        </div>
-      </div>
+      <AppNavbar />
 
       <div className="medicine-page">
         <div className="medicine-content">

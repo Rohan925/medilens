@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from 'react-markdown';
 import "../css/ChatBot.css";
+import { apiFetch } from "../lib/api";
 
 function ChatBot({ medicineName }) {
   const [messages, setMessages] = useState([]);
@@ -48,7 +49,7 @@ function ChatBot({ medicineName }) {
     setLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/chat", {
+      const res = await apiFetch("/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/OcrCamera.css";
+import { apiFetch } from "../lib/api";
 
 function OcrCamera() {
   const navigate = useNavigate();
@@ -121,7 +122,7 @@ function OcrCamera() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/ocr", {
+      const response = await apiFetch("/ocr", {
         method: "POST",
         body: formData,
       });

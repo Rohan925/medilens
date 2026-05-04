@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/Login.css";
 import logo from "../assets/logo.png";
+import { apiFetch, getApiErrorMessage } from "../lib/api";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/login", {
+      const response = await apiFetch("/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -29,17 +30,12 @@ function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Login failed");
+        throw new Error(getApiErrorMessage(data, "Login failed"));
       }
 
-      // save logged-in user
-      localStorage.setItem("user", data.email);
-
-      // redirect
       navigate("/home");
-
     } catch (err) {
-      setError("Invalid email or password");
+      setError(err.message || "Invalid email or password");
     }
   };
 

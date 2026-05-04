@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from starlette.concurrency import run_in_threadpool
 
 from app.api.schemas.requests import ChatRequest
@@ -7,12 +7,13 @@ from app.domain.enums import MessageRole, RequestMode
 from app.domain.models import ChatMessage
 from app.graph.runners.chat_graph import run_chat_graph
 from app.graph.state import GraphState
+from app.services.auth import require_authenticated_user
 
 
 router = APIRouter()
 
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("/chat", response_model=ChatResponse, dependencies=[Depends(require_authenticated_user)])
 async def chat_with_medicine(request: ChatRequest) -> ChatResponse:
     history: list[ChatMessage] = []
     for message in request.history:

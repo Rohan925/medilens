@@ -1,13 +1,14 @@
 import os
 from tempfile import NamedTemporaryFile
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from starlette.concurrency import run_in_threadpool
 
 from app.api.schemas.responses import OcrResponse
 from app.domain.enums import RequestMode
 from app.graph.runners.ocr_graph import run_ocr_graph
 from app.graph.state import GraphState
+from app.services.auth import require_authenticated_user
 
 router = APIRouter()
 
@@ -26,7 +27,7 @@ MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 CHUNK_SIZE = 1024 * 1024
 
 
-@router.post("/ocr", response_model=OcrResponse)
+@router.post("/ocr", response_model=OcrResponse, dependencies=[Depends(require_authenticated_user)])
 async def ocr_image(file: UploadFile = File(...)) -> OcrResponse:
     suffix = os.path.splitext(file.filename or "upload.jpg")[1].lower() or ".jpg"
     temp_path: str | None = None

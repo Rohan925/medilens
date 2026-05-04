@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../lib/api";
 
 export default function MedicineSummary({ medicineName }) {
   const [data, setData] = useState(null);
@@ -13,7 +14,7 @@ export default function MedicineSummary({ medicineName }) {
       setError("");
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/search", {
+        const res = await apiFetch("/search", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

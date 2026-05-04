@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch, getApiErrorMessage } from "../lib/api";
+import "../css/Login.css";
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -13,7 +15,7 @@ function Register() {
     setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/register", {
+      const response = await apiFetch("/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -24,7 +26,7 @@ function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Registration failed");
+        throw new Error(getApiErrorMessage(data, "Registration failed"));
       }
 
       alert("Account created successfully!");

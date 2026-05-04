@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -12,10 +13,12 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/medicine/:name" element={<MedicinePage />} />
-        <Route path="/ocr-result" element={<OcrResultPage />} />
         <Route path="/register" element={<Register />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/medicine/:name" element={<MedicinePage />} />
+          <Route path="/ocr-result" element={<OcrResultPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
