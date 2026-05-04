@@ -90,7 +90,6 @@ Task:
 
 Return exactly this format:
 ROUTE: ANSWER or RETRIEVE
-MEDICINE: <medicine name or NONE>
 """
 
 

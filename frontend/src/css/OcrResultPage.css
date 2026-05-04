@@ -60,6 +60,14 @@
   background: #fff;
 }
 
+.ocr-error-message {
+  color: #b91c1c;
+  background: #444;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
 /* Result cards */
 .result {
   padding: 16px;

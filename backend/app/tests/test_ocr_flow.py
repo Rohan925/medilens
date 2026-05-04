@@ -1,12 +1,44 @@
+import asyncio
+import io
 import unittest
 from unittest.mock import patch
 
+from fastapi import HTTPException
+from starlette.datastructures import Headers, UploadFile
+
+from app.api.routes.ocr import ocr_image
 from app.domain.enums import RequestMode
 from app.graph.runners.ocr_graph import run_ocr_graph
 from app.graph.state import GraphState
 
 
 class OcrFlowTests(unittest.TestCase):
+    def test_ocr_route_rejects_non_image_uploads(self) -> None:
+        upload = UploadFile(
+            file=io.BytesIO(b"not-an-image"),
+            filename="notes.txt",
+            headers=Headers({"content-type": "text/plain"}),
+        )
+
+        with self.assertRaises(HTTPException) as exc_info:
+            asyncio.run(ocr_image(upload))
+
+        self.assertEqual(exc_info.exception.status_code, 400)
+        self.assertIn("Unsupported file type", exc_info.exception.detail)
+
+    def test_ocr_route_rejects_oversized_uploads(self) -> None:
+        upload = UploadFile(
+            file=io.BytesIO(b"x" * ((5 * 1024 * 1024) + 1)),
+            filename="label.jpg",
+            headers=Headers({"content-type": "image/jpeg"}),
+        )
+
+        with self.assertRaises(HTTPException) as exc_info:
+            asyncio.run(ocr_image(upload))
+
+        self.assertEqual(exc_info.exception.status_code, 413)
+        self.assertIn("too large", exc_info.exception.detail)
+
     def test_ocr_graph_reuses_search_flow_after_image_extraction(self) -> None:
         mock_openfda = {
             "drug_name": "Ibuprofen",
@@ -54,12 +86,6 @@ class OcrFlowTests(unittest.TestCase):
             side_effect=lambda name: dict(mock_openfda),
         ), patch(
             "app.graph.agents.medicine_resolver_agent.fetch_pubchem_data",
-            side_effect=lambda name: dict(mock_pubchem),
-        ), patch(
-            "app.services.medicine.resolver.fetch_openfda_data",
-            side_effect=lambda name: dict(mock_openfda),
-        ), patch(
-            "app.services.medicine.resolver.fetch_pubchem_data",
             side_effect=lambda name: dict(mock_pubchem),
         ):
             final_state = run_ocr_graph(state)

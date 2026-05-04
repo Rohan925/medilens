@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from starlette.concurrency import run_in_threadpool
 
 from app.api.schemas.requests import SearchRequest
 from app.api.schemas.responses import SearchResponse
@@ -14,9 +15,8 @@ router = APIRouter()
 async def search_medicine(request: SearchRequest) -> SearchResponse:
     state = GraphState(
         mode=RequestMode.SEARCH,
-        search_text=request.query.strip(),
-        raw_query=request.query.strip(),
+        input_text=request.query.strip(),
     )
 
-    final_state = run_search_graph(state)
+    final_state = await run_in_threadpool(run_search_graph, state)
     return SearchResponse.model_validate(final_state.response)

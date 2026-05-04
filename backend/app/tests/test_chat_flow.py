@@ -2,11 +2,17 @@ import asyncio
 import unittest
 from unittest.mock import patch
 
+from pydantic import ValidationError
+
 from app.api.routes.chat import chat_with_medicine
 from app.api.schemas.requests import ChatMessageRequest, ChatRequest
 
 
 class ChatFlowTests(unittest.TestCase):
+    def test_chat_request_rejects_whitespace_only_query(self) -> None:
+        with self.assertRaises(ValidationError):
+            ChatRequest(query="   ", history=[])
+
     def test_chat_answers_generic_question_without_retrieval(self) -> None:
         request = ChatRequest(
             query="What are common symptoms of dehydration?",
@@ -22,7 +28,7 @@ class ChatFlowTests(unittest.TestCase):
         ), patch(
             "app.services.llm.openai_client.openai_client.invoke_text",
             side_effect=[
-                "ROUTE: ANSWER\nMEDICINE: NONE",
+                "ROUTE: ANSWER",
                 "Common symptoms of dehydration include thirst, dry mouth, dark urine, dizziness, and fatigue.",
             ],
         ):
@@ -68,16 +74,10 @@ class ChatFlowTests(unittest.TestCase):
             "app.graph.agents.medicine_resolver_agent.fetch_pubchem_data",
             side_effect=lambda name: dict(mock_pubchem),
         ), patch(
-            "app.services.medicine.resolver.fetch_openfda_data",
-            side_effect=lambda name: dict(mock_openfda),
-        ), patch(
-            "app.services.medicine.resolver.fetch_pubchem_data",
-            side_effect=lambda name: dict(mock_pubchem),
-        ), patch(
             "app.services.llm.openai_client.openai_client.invoke_text",
             side_effect=[
-                "ROUTE: RETRIEVE\nMEDICINE: Ibuprofen",
-                "CATEGORY: NSAID\nUSES: Pain relief\nWARNINGS: May cause stomach bleeding\nPRESCRIPTION_STATUS: Over-the-Counter (OTC)",
+                "ROUTE: RETRIEVE",
+                "Ibuprofen",
                 "Ibuprofen may cause stomach irritation and bleeding risk. Use it carefully.",
             ],
         ):
@@ -106,7 +106,7 @@ class ChatFlowTests(unittest.TestCase):
         ), patch(
             "app.services.llm.openai_client.openai_client.invoke_text",
             side_effect=[
-                "ROUTE: ANSWER\nMEDICINE: NONE",
+                "ROUTE: ANSWER",
                 "Based on the earlier ibuprofen context, side effects can include stomach irritation and bleeding risk.",
             ],
         ):

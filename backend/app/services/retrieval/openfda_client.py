@@ -33,12 +33,25 @@ def fetch_openfda_data(drug_name: str) -> MetadataMap | None:
     try:
         result: MetadataMap | None = None
         for query in queries:
-            response = requests.get(
-                BASE_URL,
-                params={"search": query, "limit": 1},
-                timeout=10,
-            )
-            response.raise_for_status()
+            try:
+                logger.info(
+                    "OpenFDA request start: drug=%s query=%s",
+                    drug_name,
+                    query,
+                )
+                response = requests.get(
+                    BASE_URL,
+                    params={"search": query, "limit": 1},
+                    timeout=10,
+                )
+                response.raise_for_status()
+            except requests.HTTPError as exc:
+                status_code = getattr(exc.response, "status_code", None)
+                if status_code == 404:
+                    logger.info("OpenFDA query returned no results for %s via %s", drug_name, query)
+                    continue
+                raise
+
             data = response.json()
             if "results" in data:
                 result = data["results"][0]

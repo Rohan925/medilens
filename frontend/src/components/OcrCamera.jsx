@@ -127,6 +127,17 @@ function OcrCamera() {
       });
 
       const data = await response.json();
+      if (!response.ok) {
+        navigate("/ocr-result", {
+          state: {
+            image: imageUrl,
+            success: false,
+            summary: null,
+            error: data.detail || "Failed to process image",
+          },
+        });
+        return;
+      }
 
       navigate("/ocr-result", {
         state: {

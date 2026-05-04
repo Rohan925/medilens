@@ -11,6 +11,7 @@ function OcrResultPage() {
   const image = state.image;
   const medicineName = state.medicine || state.name;
   const summary = state.summary;
+  const error = state.error;
   const uses = Array.isArray(summary?.uses) ? summary.uses : [];
 
   return (
@@ -24,7 +25,7 @@ function OcrResultPage() {
 
       <div className="medicine-page">
         <div className="medicine-content">
-          <h2>{medicineName?.toUpperCase()}</h2>
+          <h2>{medicineName?.toUpperCase() || "OCR Result"}</h2>
 
           {image && (
             <img
@@ -37,7 +38,9 @@ function OcrResultPage() {
           <div className="medicine-summary">
             <h3>Summary</h3>
 
-            {summary ? (
+            {error ? (
+              <p className="ocr-error-message">{error}</p>
+            ) : summary ? (
               <>
                 <p><strong>Category:</strong> {summary.category}</p>
                 <p><strong>Uses:</strong> {uses.join(", ")}</p>
@@ -55,7 +58,9 @@ function OcrResultPage() {
         </div>
 
         <div className="medicine-chatbot">
-          <ChatBot medicineName={medicineName} />
+          {medicineName ? (
+            <ChatBot medicineName={medicineName} />
+          ) : null}
         </div>
       </div>
     </>

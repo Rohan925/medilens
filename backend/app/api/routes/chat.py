@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from starlette.concurrency import run_in_threadpool
 
 from app.api.schemas.requests import ChatRequest
 from app.api.schemas.responses import ChatResponse
@@ -28,9 +29,9 @@ async def chat_with_medicine(request: ChatRequest) -> ChatResponse:
 
     state = GraphState(
         mode=RequestMode.CHAT,
-        raw_query=request.query.strip(),
+        input_text=request.query.strip(),
         history=history,
     )
 
-    final_state = run_chat_graph(state)
+    final_state = await run_in_threadpool(run_chat_graph, state)
     return ChatResponse.model_validate(final_state.response)

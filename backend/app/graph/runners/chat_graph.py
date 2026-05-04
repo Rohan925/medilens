@@ -26,13 +26,14 @@ def build_chat_graph():
     graph.add_edge(START, "chat_router")
     graph.add_conditional_edges(
         "chat_router",
-        lambda state: state.chat_route or "generic",
+        lambda state: state.chat_route if state.chat_route in {"answer", "retrieve"} else "answer",
         {
             "answer": "chat",
             "retrieve": "medicine_resolver",
         },
     )
     graph.add_edge("summarizer", "chat")
+
     graph.add_edge("medicine_resolver", "summarizer")
     graph.add_edge("chat", "citation")
     graph.add_edge("citation", "formatter")

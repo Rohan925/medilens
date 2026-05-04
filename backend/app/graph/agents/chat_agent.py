@@ -45,7 +45,7 @@ def _build_evidence_text(state: GraphState) -> str:
 def chat_agent(state: GraphState) -> GraphState:
     logger.info("Node hit: chat_agent")
 
-    latest_user_message = state.raw_query or ""
+    latest_user_message = state.input_text or ""
     if not latest_user_message:
         for message in reversed(state.history):
             if message.role.value == "user":

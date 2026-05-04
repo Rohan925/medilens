@@ -1,4 +1,12 @@
-from pydantic import BaseModel, Field
+from typing import Annotated
+
+from pydantic import BaseModel, Field, StringConstraints
+
+
+NonEmptyTrimmedStr = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1),
+]
 
 
 class ChatMessageRequest(BaseModel):
@@ -7,14 +15,17 @@ class ChatMessageRequest(BaseModel):
 
 
 class SearchRequest(BaseModel):
-    query: str = Field(
+    query: NonEmptyTrimmedStr = Field(
         ...,
         description="Free-text search query that may contain a medicine name.",
     )
 
 
 class ChatRequest(BaseModel):
-    query: str = Field(..., description="Latest user message for this chat turn.")
+    query: NonEmptyTrimmedStr = Field(
+        ...,
+        description="Latest user message for this chat turn.",
+    )
     history: list[ChatMessageRequest] = Field(
         default_factory=list,
         description="Prior in-session messages, excluding the latest query.",

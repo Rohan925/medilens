@@ -9,8 +9,8 @@ logger = logging.getLogger("node.chat_router")
 
 
 def _latest_user_query(state: GraphState) -> str:
-    if state.raw_query:
-        return state.raw_query
+    if state.input_text:
+        return state.input_text
     for message in reversed(state.history):
         if message.role.value == "user":
             return message.content
@@ -25,15 +25,9 @@ def _history_text(state: GraphState, max_turns: int = 8) -> str:
     return "\n".join(lines)
 
 
-def _parse_router_output(output: str) -> tuple[str, str | None]:
+def _parse_router_output(output: str) -> str:
     route_match = re.search(r"ROUTE:\s*(ANSWER|RETRIEVE)", output, flags=re.IGNORECASE)
-    medicine_match = re.search(r"MEDICINE:\s*(.*)", output, flags=re.IGNORECASE)
-
-    route = route_match.group(1).upper() if route_match else "ANSWER"
-    medicine = medicine_match.group(1).strip() if medicine_match else "NONE"
-    if medicine.upper() == "NONE":
-        return route, None
-    return route, medicine
+    return route_match.group(1).upper() if route_match else "ANSWER"
 
 
 def chat_router_agent(state: GraphState) -> GraphState:
@@ -51,10 +45,8 @@ def chat_router_agent(state: GraphState) -> GraphState:
     )
     output = openai_client.invoke_text(prompt)
     if output:
-        route, medicine_name = _parse_router_output(output)
+        route = _parse_router_output(output)
         state.chat_route = "retrieve" if route == "RETRIEVE" else "answer"
-        if medicine_name:
-            state.medicine_name = medicine_name
         return state
 
     state.chat_route = "answer"

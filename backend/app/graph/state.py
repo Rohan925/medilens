@@ -12,13 +12,9 @@ class GraphState(BaseModel):
         default=None,
         description="Temporary filesystem path for OCR image processing.",
     )
-    search_text: str | None = Field(
+    input_text: str | None = Field(
         default=None,
-        description="Original free-text search input.",
-    )
-    raw_query: str | None = Field(
-        default=None,
-        description="Current user query text.",
+        description="Primary user text input for search or chat flows.",
     )
     ocr_text: str | None = Field(
         default=None,

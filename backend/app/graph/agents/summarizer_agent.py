@@ -23,8 +23,6 @@ def _extract_section(text: str, label: str) -> str:
 def summarizer_agent(state: GraphState) -> GraphState:
     logger.info("Node hit: summarizer_agent")
     medicine_name = state.resolved_medicine or state.medicine_name or "Unknown Medicine"
-    has_openfda_data = bool(state.openfda_data)
-    has_pubchem_data = bool(state.pubchem_data)
 
     state.structured_summary = build_medicine_summary(
         medicine_name=medicine_name,
@@ -32,22 +30,28 @@ def summarizer_agent(state: GraphState) -> GraphState:
         pubchem_data=state.pubchem_data,
     )
 
-    needs_enrichment = (
-        not has_openfda_data
-        or not has_pubchem_data
-        or not state.structured_summary.uses
-        or not state.structured_summary.warnings
+    summary = state.structured_summary
+    has_quality_category = bool(summary and summary.category not in {"Unknown", "General Health"})
+    has_substantive_details = bool(
+        summary
+        and (
+            # summary.uses or
+            summary.warnings
+            or summary.mechanism
+            or summary.summary_text
+        )
     )
+    needs_enrichment = not (has_quality_category and has_substantive_details)
 
     if needs_enrichment:
         logger.info("Summarizer using LLM enrichment fallback")
         evidence_text = "\n\n".join(chunk.text for chunk in state.retrieved_chunks)
         prompt = build_summary_enrichment_prompt(
-            medicine_name=state.structured_summary.drug_name,
-            category=state.structured_summary.category,
-            uses=state.structured_summary.uses,
-            warnings=state.structured_summary.warnings,
-            prescription_status=state.structured_summary.prescription_status,
+            medicine_name=summary.drug_name,
+            category=summary.category,
+            uses=summary.uses,
+            warnings=summary.warnings,
+            prescription_status=summary.prescription_status,
             evidence_text=evidence_text,
         )
         output = openai_client.invoke_text(prompt)
@@ -58,12 +62,12 @@ def summarizer_agent(state: GraphState) -> GraphState:
             prescription_status = _extract_section(output, "PRESCRIPTION_STATUS")
 
             if category:
-                state.structured_summary.category = category
+                summary.category = category
             if uses:
-                state.structured_summary.uses = uses[:6]
+                summary.uses = uses[:6]
             if warnings:
-                state.structured_summary.warnings = warnings[:5]
+                summary.warnings = warnings[:5]
             if prescription_status:
-                state.structured_summary.prescription_status = prescription_status
+                summary.prescription_status = prescription_status
 
     return state
