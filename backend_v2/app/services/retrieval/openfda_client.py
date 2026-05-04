@@ -1,5 +1,4 @@
 import logging
-import re
 
 import requests
 
@@ -18,73 +17,6 @@ SYNONYMS = {
     "aleve": "naproxen",
     "aspirin": "aspirin",
 }
-
-
-def _flatten_text_list(text_list: list[str] | list[list[str]] | None) -> list[str]:
-    if not text_list:
-        return []
-
-    flat_list: list[str] = []
-    for item in text_list:
-        if isinstance(item, list):
-            flat_list.extend(str(value) for value in item)
-        else:
-            flat_list.append(str(item))
-    return flat_list
-
-
-def _format_warning_points(text_list: list[str] | list[list[str]] | None, max_items: int = 5) -> list[str]:
-    flat_list = _flatten_text_list(text_list)
-    if not flat_list:
-        return []
-
-    keywords = [
-        "liver",
-        "bleeding",
-        "heart",
-        "stroke",
-        "allergy",
-        "damage",
-        "stomach",
-        "alcohol",
-        "fatal",
-        "risk",
-        "interaction",
-        "pregnant",
-    ]
-    text = " ".join(flat_list)
-    text = re.sub(r"[\r\n\t]+", " ", text)
-    text = re.sub(r"\s+", " ", text).strip()
-    text = re.sub(
-        r"^(?:warnings\s+and\s+cautions|warnings|boxed warning)\s*[:\-]?\s*",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    )
-    sentences = re.split(r"[.!\•]|(?:\s+-\s+)", text)
-
-    warnings: list[str] = []
-    for sentence in sentences:
-        cleaned = sentence.strip()
-        if not cleaned or len(cleaned) < 15:
-            continue
-
-        lowered = cleaned.lower()
-        if any(keyword in lowered for keyword in keywords):
-            cleaned = cleaned[0].upper() + cleaned[1:]
-            if cleaned not in warnings:
-                warnings.append(cleaned)
-
-    if not warnings:
-        for sentence in sentences:
-            cleaned = sentence.strip()
-            if len(cleaned) >= 15:
-                cleaned = cleaned[0].upper() + cleaned[1:]
-                if cleaned not in warnings:
-                    warnings.append(cleaned)
-
-    return warnings[:max_items]
-
 
 def resolve_search_name(drug_name: str) -> str:
     return SYNONYMS.get(drug_name.lower(), drug_name)
@@ -134,7 +66,7 @@ def fetch_openfda_data(drug_name: str) -> MetadataMap | None:
             raw_class = openfda["pharm_class_cs"][0]
 
         if raw_class:
-            pharm_class = re.sub(r"\s*\[.*?\]", "", raw_class).strip()
+            pharm_class = raw_class.split("[", 1)[0].strip()
         elif product_type != "Unknown":
             pharm_class = product_type.title().replace("Human ", "")
         else:
@@ -151,7 +83,7 @@ def fetch_openfda_data(drug_name: str) -> MetadataMap | None:
             "drug_name": drug_name,
             "search_name": search_name,
             "indications": raw_uses,
-            "warnings": _format_warning_points(raw_warnings, max_items=5),
+            "warnings": raw_warnings,
             "dosage": result.get("dosage_and_administration", []),
             "mechanism_of_action": result.get("mechanism_of_action", []),
             "active_ingredient": result.get("active_ingredient", []),

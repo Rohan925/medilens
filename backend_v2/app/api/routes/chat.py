@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi import APIRouter
 
 from app.api.schemas.requests import ChatRequest
@@ -28,18 +26,11 @@ async def chat_with_medicine(request: ChatRequest) -> ChatResponse:
             )
         )
 
-    latest_user_query = ""
-    for message in reversed(history):
-        if message.role == MessageRole.USER:
-            latest_user_query = message.content
-            break
-
     state = GraphState(
         mode=RequestMode.CHAT,
-        raw_query=latest_user_query,
-        medicine_name=request.medicine_name,
+        raw_query=request.query.strip(),
         history=history,
     )
 
-    final_state = await asyncio.to_thread(run_chat_graph, state)
+    final_state = run_chat_graph(state)
     return ChatResponse.model_validate(final_state.response)

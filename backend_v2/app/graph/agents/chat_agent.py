@@ -45,14 +45,12 @@ def _build_evidence_text(state: GraphState) -> str:
 def chat_agent(state: GraphState) -> GraphState:
     logger.info("Node hit: chat_agent")
 
-    latest_user_message = ""
-    for message in reversed(state.history):
-        if message.role.value == "user":
-            latest_user_message = message.content
-            break
-
-    if not latest_user_message and state.raw_query:
-        latest_user_message = state.raw_query
+    latest_user_message = state.raw_query or ""
+    if not latest_user_message:
+        for message in reversed(state.history):
+            if message.role.value == "user":
+                latest_user_message = message.content
+                break
 
     if not latest_user_message:
         state.final_answer = "I couldn't find a user question to answer."
@@ -62,6 +60,7 @@ def chat_agent(state: GraphState) -> GraphState:
     prompt = build_chat_answer_prompt(
         user_query=latest_user_message,
         medicine_name=state.resolved_medicine or state.medicine_name,
+        route=state.chat_route,
         history_text=_build_history_text(state),
         summary_text=_build_summary_text(state),
         evidence_text=_build_evidence_text(state),

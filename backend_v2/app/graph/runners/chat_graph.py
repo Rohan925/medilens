@@ -3,10 +3,10 @@ import logging
 from langgraph.graph import END, START, StateGraph
 
 from app.graph.agents.chat_agent import chat_agent
+from app.graph.agents.chat_router_agent import chat_router_agent
 from app.graph.agents.citation_agent import citation_agent
 from app.graph.agents.medicine_resolver_agent import medicine_resolver_agent
 from app.graph.agents.response_formatter_agent import response_formatter_agent
-from app.graph.agents.retriever_agent import retriever_agent
 from app.graph.agents.summarizer_agent import summarizer_agent
 from app.graph.state import GraphState
 
@@ -16,17 +16,24 @@ logger = logging.getLogger("graph.chat")
 def build_chat_graph():
     graph = StateGraph(GraphState)
 
+    graph.add_node("chat_router", chat_router_agent)
     graph.add_node("medicine_resolver", medicine_resolver_agent)
-    graph.add_node("retriever", retriever_agent)
     graph.add_node("summarizer", summarizer_agent)
     graph.add_node("chat", chat_agent)
     graph.add_node("citation", citation_agent)
     graph.add_node("formatter", response_formatter_agent)
 
-    graph.add_edge(START, "medicine_resolver")
-    graph.add_edge("medicine_resolver", "retriever")
-    graph.add_edge("retriever", "summarizer")
+    graph.add_edge(START, "chat_router")
+    graph.add_conditional_edges(
+        "chat_router",
+        lambda state: state.chat_route or "generic",
+        {
+            "answer": "chat",
+            "retrieve": "medicine_resolver",
+        },
+    )
     graph.add_edge("summarizer", "chat")
+    graph.add_edge("medicine_resolver", "summarizer")
     graph.add_edge("chat", "citation")
     graph.add_edge("citation", "formatter")
     graph.add_edge("formatter", END)

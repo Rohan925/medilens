@@ -19,9 +19,13 @@ export default function MedicineSummary({ medicineName }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            medicine: medicineName,
+            query: medicineName,
           }),
         });
+
+        if (!res.ok) {
+          throw new Error("Search request failed");
+        }
 
         const data = await res.json();
         setData(data);
@@ -114,6 +118,10 @@ export default function MedicineSummary({ medicineName }) {
 
       {!loading && !data && (
         <p style={{ opacity: 0.6 }}>No summary available.</p>
+      )}
+
+      {error && (
+        <p style={{ color: "#c5221f", marginTop: "0.75rem" }}>{error}</p>
       )}
     </div>
   );

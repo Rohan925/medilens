@@ -7,9 +7,23 @@ function ChatBot({ medicineName }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const buildQuery = (rawInput) => {
+    const trimmed = rawInput.trim();
+    if (!medicineName) {
+      return trimmed;
+    }
+
+    const lowered = trimmed.toLowerCase();
+    const medicineLower = medicineName.toLowerCase();
+
+    if (lowered.includes(medicineLower)) {
+      return trimmed;
+    }
+
+    return `About ${medicineName}: ${trimmed}`;
+  };
+
   useEffect(() => {
-    // We do NOT want to fetch the summary here anymore.
-    // The chatbot should just be a Q&A interface.
     if (medicineName) {
       setMessages([
         { role: "assistant", content: `I'm here to help with questions about ${medicineName}.` }
@@ -25,7 +39,10 @@ function ChatBot({ medicineName }) {
     if (!input.trim()) return;
 
     const userMsg = { role: "user", content: input };
-    const newMessages = [...messages, userMsg];
+    const priorMessages = [...messages];
+    const newMessages = [...priorMessages, userMsg];
+    const query = buildQuery(input);
+
     setMessages(newMessages);
     setInput("");
     setLoading(true);
@@ -35,10 +52,14 @@ function ChatBot({ medicineName }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          medicine_name: medicineName,
-          history: newMessages
+          query,
+          history: priorMessages,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error("Chat request failed");
+      }
 
       const data = await res.json();
       const botMsg = { role: "assistant", content: data.response };

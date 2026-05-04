@@ -143,8 +143,11 @@ def build_retrieved_chunks(
         indications = clean_use_points(openfda_data.get("indications"), max_items=5)
         warnings = clean_warning_points(openfda_data.get("warnings"), max_items=5)
         dosage = clean_text_list(openfda_data.get("dosage"), max_items=3)
+        purpose = clean_text_list(openfda_data.get("purpose"), max_items=3)
 
         text_parts: list[str] = []
+        if purpose:
+            text_parts.append(f"Purpose: {', '.join(purpose)}.")
         if indications:
             text_parts.append(f"Indications: {', '.join(indications)}.")
         if warnings:

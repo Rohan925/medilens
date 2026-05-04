@@ -3,7 +3,10 @@ from dataclasses import dataclass
 import logging
 
 from app.services.llm.openai_client import openai_client
-from app.services.llm.prompts import build_medicine_normalization_prompt
+from app.services.llm.prompts import (
+    build_medicine_normalization_prompt,
+    build_search_interpretation_prompt,
+)
 from app.services.retrieval.openfda_client import fetch_openfda_data
 from app.services.retrieval.pubchem_client import fetch_pubchem_data
 from app.domain.types import MetadataMap
@@ -49,10 +52,8 @@ STOPWORDS = {
 @dataclass
 class MedicineValidationResult:
     normalized_name: str | None
-    confidence_score: float
     openfda_data: MetadataMap | None = None
     pubchem_data: MetadataMap | None = None
-    source: str | None = None
 
 
 def normalize_candidate(value: str) -> str:
@@ -72,9 +73,7 @@ def validate_medicine_name(candidate: str) -> MedicineValidationResult | None:
         logger.info("Resolver validation success via OpenFDA: candidate=%r", normalized)
         return MedicineValidationResult(
             normalized_name=normalized,
-            confidence_score=0.0,
             openfda_data=openfda_data,
-            source="openfda",
         )
 
     pubchem_data = fetch_pubchem_data(normalized)
@@ -82,9 +81,7 @@ def validate_medicine_name(candidate: str) -> MedicineValidationResult | None:
         logger.info("Resolver validation success via PubChem: candidate=%r", normalized)
         return MedicineValidationResult(
             normalized_name=normalized,
-            confidence_score=0.0,
             pubchem_data=pubchem_data,
-            source="pubchem",
         )
 
     logger.info("Resolver validation failed: candidate=%r", normalized)
@@ -118,9 +115,29 @@ def llm_normalize_medicine_name(
     return normalized
 
 
-def extract_possible_medicine(query: str) -> str:
-    candidates = extract_candidate_medicines(query)
-    return candidates[0] if candidates else ""
+def llm_interpret_search_text(search_text: str) -> str | None:
+    if not openai_client.available or not search_text.strip():
+        logger.info(
+            "Resolver search interpretation skipped: available=%s search_text_present=%s",
+            openai_client.available,
+            bool(search_text.strip()),
+        )
+        return None
+
+    logger.info("Resolver search interpretation start: search_text=%r", search_text[:200])
+    prompt = build_search_interpretation_prompt(search_text)
+    output_text = openai_client.invoke_text(prompt)
+    if not output_text:
+        logger.info("Resolver search interpretation returned no output")
+        return None
+
+    normalized = output_text.splitlines()[0].strip().strip("\"'")
+    if normalized.upper() == "UNKNOWN":
+        logger.info("Resolver search interpretation returned UNKNOWN")
+        return None
+
+    logger.info("Resolver search interpretation success: normalized=%r", normalized)
+    return normalized
 
 
 def extract_candidate_medicines(text: str, max_candidates: int = 5) -> list[str]:
@@ -150,26 +167,30 @@ def extract_candidate_medicines(text: str, max_candidates: int = 5) -> list[str]
 def resolve_medicine_name(
     medicine_name: str | None = None,
     query: str | None = None,
-    ocr_text: str | None = None,
     candidates: list[str] | None = None,
+    search_text: str | None = None,
 ) -> MedicineValidationResult:
-    logger.info("Resolver start: medicine_name=%r query=%r", medicine_name, (query or "")[:120])
+    logger.info(
+        "Resolver start: medicine_name=%r query=%r search_text=%r",
+        medicine_name,
+        (query or "")[:120],
+        (search_text or "")[:120],
+    )
     if medicine_name:
         resolved = normalize_candidate(medicine_name)
         validation = validate_medicine_name(resolved) if resolved else None
         if validation:
             validation.normalized_name = resolved.title()
-            validation.confidence_score = 0.95
             logger.info("Resolver direct hit: normalized_name=%r", validation.normalized_name)
             return validation
 
     candidate_pool: list[str] = []
     if candidates:
         candidate_pool.extend(candidates)
-    if ocr_text:
-        candidate_pool.extend(extract_candidate_medicines(ocr_text))
     if query:
         candidate_pool.extend(extract_candidate_medicines(query))
+    if search_text:
+        candidate_pool.extend(extract_candidate_medicines(search_text))
 
     seen: set[str] = set()
     for candidate in candidate_pool:
@@ -183,11 +204,18 @@ def resolve_medicine_name(
         validation = validate_medicine_name(normalized)
         if validation:
             validation.normalized_name = normalized.title()
-            validation.confidence_score = 0.7 if ocr_text else 0.6
             logger.info("Resolver candidate hit: normalized_name=%r", validation.normalized_name)
             return validation
 
-    llm_raw_input_parts = [part for part in [medicine_name, ocr_text, query] if part]
+    interpreted_search_name = llm_interpret_search_text(search_text or "")
+    if interpreted_search_name:
+        validation = validate_medicine_name(interpreted_search_name)
+        if validation:
+            validation.normalized_name = normalize_candidate(interpreted_search_name).title()
+            logger.info("Resolver search-text LLM hit: normalized_name=%r", validation.normalized_name)
+            return validation
+
+    llm_raw_input_parts = [part for part in [medicine_name, query, search_text] if part]
     llm_raw_input = "\n".join(llm_raw_input_parts).strip()
 
     if llm_raw_input:
@@ -198,19 +226,10 @@ def resolve_medicine_name(
         validation = validate_medicine_name(llm_candidate) if llm_candidate else None
         if validation:
             validation.normalized_name = normalize_candidate(llm_candidate).title()
-            validation.confidence_score = 0.9
             logger.info("Resolver LLM hit: normalized_name=%r", validation.normalized_name)
             return validation
 
     logger.info("Resolver unresolved")
     return MedicineValidationResult(
         normalized_name=None,
-        confidence_score=0.0,
-        source="unresolved",
     )
-
-
-'''
-1. Search - Medicine name
-    
-'''

@@ -7,17 +7,17 @@ class ChatMessageRequest(BaseModel):
 
 
 class SearchRequest(BaseModel):
-    medicine: str = Field(..., description="Medicine name entered by the user.")
+    query: str = Field(
+        ...,
+        description="Free-text search query that may contain a medicine name.",
+    )
 
 
 class ChatRequest(BaseModel):
-    medicine_name: str | None = Field(
-        default=None,
-        description="Optional medicine context already known by the frontend.",
-    )
+    query: str = Field(..., description="Latest user message for this chat turn.")
     history: list[ChatMessageRequest] = Field(
         default_factory=list,
-        description="Ephemeral in-session message history from the frontend.",
+        description="Prior in-session messages, excluding the latest query.",
     )
 
 

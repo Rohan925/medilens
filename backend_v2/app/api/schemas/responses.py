@@ -38,10 +38,6 @@ class SearchResponse(BaseModel):
     uses: list[str] = Field(default_factory=list, description="Common uses.")
     warnings: list[str] = Field(default_factory=list, description="Key warnings.")
     prescription_status: str | None = Field(default=None)
-    prescription_required: str | bool | None = Field(
-        default=None,
-        description="Legacy compatibility field retained for frontend fallback logic.",
-    )
     mechanism: list[str] = Field(default_factory=list)
     citations: list[CitationResponse] = Field(default_factory=list)
 
